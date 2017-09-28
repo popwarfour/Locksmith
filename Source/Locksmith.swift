@@ -7,13 +7,14 @@ public typealias PerformRequestClosureType = (_ requestReference: CFDictionary, 
 
 // MARK: - Locksmith
 public struct Locksmith {
-    public static func loadDataForUserAccount(userAccount: String, inService service: String = LocksmithDefaultService) -> [String: Any]? {
+    public static func loadDataForUserAccount(userAccount: String, inService service: String = LocksmithDefaultService, withAccessibilityOption accessible: LocksmithAccessibleOption? = nil) -> [String: Any]? {
         struct ReadRequest: GenericPasswordSecureStorable, ReadableSecureStorable {
             let service: String
             let account: String
+            var accessible: LocksmithAccessibleOption?
         }
         
-        let request = ReadRequest(service: service, account: userAccount)
+        let request = ReadRequest(service: service, account: userAccount, accessible: accessible)
         return request.readFromSecureStore()?.data
     }
     
@@ -22,9 +23,10 @@ public struct Locksmith {
             let service: String
             let account: String
             let data: [String: Any]
+            var accessible: LocksmithAccessibleOption?
         }
         
-        let request = CreateRequest(service: service, account: userAccount, data: data)
+        let request = CreateRequest(service: service, account: userAccount, data: data, accessible: nil)
         return try request.createInSecureStore()
     }
     
@@ -32,9 +34,10 @@ public struct Locksmith {
         struct DeleteRequest: GenericPasswordSecureStorable, DeleteableSecureStorable {
             let service: String
             let account: String
+            var accessible: LocksmithAccessibleOption?
         }
         
-        let request = DeleteRequest(service: service, account: userAccount)
+        let request = DeleteRequest(service: service, account: userAccount, accessible: nil)
         return try request.deleteFromSecureStore()
     }
     
@@ -43,9 +46,10 @@ public struct Locksmith {
             let service: String
             let account: String
             let data: [String: Any]
+            var accessible: LocksmithAccessibleOption?
         }
 
-        let request = UpdateRequest(service: service, account: userAccount, data: data)
+        let request = UpdateRequest(service: service, account: userAccount, data: data, accessible: nil)
         try request.updateInSecureStore()
     }
 }
@@ -53,7 +57,7 @@ public struct Locksmith {
 // MARK: - SecureStorable
 /// The base protocol that indicates conforming types will have the ability to be stored in a secure storage container, such as the iOS keychain.
 public protocol SecureStorable {
-    var accessible: LocksmithAccessibleOption? { get }
+    var accessible: LocksmithAccessibleOption? { get set }
     var accessGroup: String? { get }
 }
 
@@ -470,13 +474,14 @@ public extension ReadableSecureStorable where Self : InternetPasswordSecureStora
 
 struct GenericPasswordResult: GenericPasswordSecureStorableResultType {
     var resultDictionary: [String: Any]
+    var accessible: LocksmithAccessibleOption?
 }
 
 public extension ReadableSecureStorable where Self : GenericPasswordSecureStorable {
     func readFromSecureStore() -> GenericPasswordSecureStorableResultType? {
         do {
             if let result = try performSecureStorageAction(closure: performReadRequestClosure, secureStoragePropertyDictionary: asReadableSecureStoragePropertyDictionary) {
-                return GenericPasswordResult(resultDictionary: result)
+                return GenericPasswordResult(resultDictionary: result, accessible: accessible)
             } else {
                 return nil
             }
@@ -490,7 +495,7 @@ public extension ReadableSecureStorable where Self : InternetPasswordSecureStora
     func readFromSecureStore() -> InternetPasswordSecureStorableResultType? {
         do {
             if let result = try performSecureStorageAction(closure: performReadRequestClosure, secureStoragePropertyDictionary: asReadableSecureStoragePropertyDictionary) {
-                return InternetPasswordResult(resultDictionary: result)
+                return InternetPasswordResult(resultDictionary: result, accessible: accessible)
             } else {
                 return nil
             }
@@ -613,6 +618,7 @@ public protocol SecureStorableResultType: SecureStorable {
 
 struct InternetPasswordResult: InternetPasswordSecureStorableResultType {
     var resultDictionary: [String: Any]
+    var accessible: LocksmithAccessibleOption?
 }
 
 public extension SecureStorableResultType {
