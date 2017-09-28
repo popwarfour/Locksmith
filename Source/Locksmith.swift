@@ -7,18 +7,18 @@ public typealias PerformRequestClosureType = (_ requestReference: CFDictionary, 
 
 // MARK: - Locksmith
 public struct Locksmith {
-    public static func loadDataForUserAccount(userAccount: String, inService service: String = LocksmithDefaultService, withAccessibilityOption accessible: LocksmithAccessibleOption? = nil) -> [String: Any]? {
+    public static func loadDataForUserAccount(userAccount: String, inService service: String = LocksmithDefaultService, withAccessibilityOption accessibilityOption: LocksmithAccessibleOption? = nil) -> [String: Any]? {
         struct ReadRequest: GenericPasswordSecureStorable, ReadableSecureStorable {
             let service: String
             let account: String
             var accessible: LocksmithAccessibleOption?
         }
         
-        let request = ReadRequest(service: service, account: userAccount, accessible: accessible)
+        let request = ReadRequest(service: service, account: userAccount, accessible: accessibilityOption)
         return request.readFromSecureStore()?.data
     }
     
-    public static func saveData(data: [String: Any], forUserAccount userAccount: String, inService service: String = LocksmithDefaultService) throws {
+    public static func saveData(data: [String: Any], forUserAccount userAccount: String, inService service: String = LocksmithDefaultService, withAccessibilityOption accessibilityOption: LocksmithAccessibleOption? = nil) throws {
         struct CreateRequest: GenericPasswordSecureStorable, CreateableSecureStorable {
             let service: String
             let account: String
@@ -26,22 +26,22 @@ public struct Locksmith {
             var accessible: LocksmithAccessibleOption?
         }
         
-        let request = CreateRequest(service: service, account: userAccount, data: data, accessible: nil)
+        let request = CreateRequest(service: service, account: userAccount, data: data, accessible: accessibilityOption)
         return try request.createInSecureStore()
     }
     
-    public static func deleteDataForUserAccount(userAccount: String, inService service: String = LocksmithDefaultService) throws {
+    public static func deleteDataForUserAccount(userAccount: String, inService service: String = LocksmithDefaultService, withAccessibilityOption accessibilityOption: LocksmithAccessibleOption? = nil) throws {
         struct DeleteRequest: GenericPasswordSecureStorable, DeleteableSecureStorable {
             let service: String
             let account: String
             var accessible: LocksmithAccessibleOption?
         }
         
-        let request = DeleteRequest(service: service, account: userAccount, accessible: nil)
+        let request = DeleteRequest(service: service, account: userAccount, accessible: accessibilityOption)
         return try request.deleteFromSecureStore()
     }
     
-    public static func updateData(data: [String: Any], forUserAccount userAccount: String, inService service: String = LocksmithDefaultService) throws {
+    public static func updateData(data: [String: Any], forUserAccount userAccount: String, inService service: String = LocksmithDefaultService, withAccessibilityOption accessibilityOption: LocksmithAccessibleOption? = nil) throws {
         struct UpdateRequest: GenericPasswordSecureStorable, CreateableSecureStorable {
             let service: String
             let account: String
@@ -49,7 +49,7 @@ public struct Locksmith {
             var accessible: LocksmithAccessibleOption?
         }
 
-        let request = UpdateRequest(service: service, account: userAccount, data: data, accessible: nil)
+        let request = UpdateRequest(service: service, account: userAccount, data: data, accessible: accessibilityOption)
         try request.updateInSecureStore()
     }
 }
